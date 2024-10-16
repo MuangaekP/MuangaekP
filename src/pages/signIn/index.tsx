@@ -47,6 +47,8 @@ export default function SignInPage() {
         setDisableButton(false);
       }
     },
+    validateOnBlur: false,
+    validateOnChange: false,
   });
 
 
