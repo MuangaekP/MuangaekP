@@ -12,46 +12,50 @@ import {
   Input,
   Button,
 } from "@material-tailwind/react"
+import { useFormik } from 'formik'
+import * as yup from "yup"
 
 export default function SignInPage() {
   const router = useRouter()
   const { t } = useTranslation()
   const [signIn] = useSignInMutation()
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [showErrorUsername, setShowErrorUsername] = useState(false)
-  const [showErrorPassword, setShowErrorPassword] = useState(false)
   const [disableButton, setDisableButton] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const loginSubmit = async () => {
-    if (username.length > 0 && password.length > 0) {
-      setOpen(false)
+  const validationSchema = yup.object({
+    email: yup.string().email('Invalid email format').required('Required'),
+    password: yup.string() .min(1,'Password must be at least 6 characters') .required ('Required'),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      setOpen(false);
       try {
-        await signIn(
-          {
-            email: username,
-            password: password
-          }
-        ).unwrap()
-        setDisableButton(true)
-        router.push("/manageAccommodation")
-      } catch (error: any) {
-        setOpen(true)
-        setDisableButton(false)
+        setDisableButton(true);
+        await signIn({
+          email: values.email,
+          password: values.password,
+        }).unwrap();
+        router.push('/manageAccommodation');
+      } catch (error) {
+        setOpen(true);
+        setDisableButton(false);
       }
-    } else {
-      setShowErrorUsername(true)
-      setShowErrorPassword(true)
-    }
-  };
+    },
+  });
+
 
   return (
     <div className="font-prompt grid h-screen grid-rows-[auto_1fr] bg-white ">
       <div>
         <Header />
         <div className="hidden sm:block my-10 mx-10">
-          <Breadcrumbs className="">
+          <Breadcrumbs>
           <a href="/" className="opacity-80 ml-2">
             {t('home')}
           </a>
@@ -69,7 +73,7 @@ export default function SignInPage() {
         <Typography className="text-[150%] text-black ">
           {t("login.signIn")}
         </Typography>
-        <form className="mt-8 mb-2 w-80 max-w-screen-lg sm:w-96 ">
+        <form className="mt-8 mb-2 w-80 max-w-screen-lg sm:w-96 " onSubmit={formik.handleSubmit}>
           <div className="mb-1 flex flex-col gap-6 ">
             <Alert open={open} color="red" onClose={() => setOpen(false)}>
               {t("login.error")}
@@ -78,46 +82,38 @@ export default function SignInPage() {
               {t("email")}
             </Typography>
             <Input
-              error={showErrorUsername}
+              error={formik.touched.email && Boolean(formik.errors.email)}
               type="email"
               size="lg"
               color="black"
               placeholder="email@mail.com"
-              onChange={(e) => {
-                setUsername(e.target.value);
-              }}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.email}
+              name="email"
               label="Email"
-              onFocus={(e) => { setShowErrorUsername(false) }}
-              value={username}
             />
+            {formik.touched.email && formik.errors.email && (
+              <Typography color="red">{formik.errors.email}</Typography>
+            )}
             <Typography className="text-[110%] font-bold">
               {t("password")}
             </Typography>
             <Input
+              error={formik.touched.password && Boolean(formik.errors.password)}
               label="Password"
               type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-            />
-            {/* { <Input
-              type="password"
-              size="lg"
-              label="Password"
-              color="white"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              onFocus={(e) => { setShowErrorPassword(false) }}
-              // icon={<i className="fas fa-heart" />}
-              // className=" !border-t-blue-gray-500 focus:!border-t-gray-900 bg-white"
-            /> */}
-            
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.password}
+              name="password"
+            />           
+              {formik.touched.password && formik.errors.password && (
+              <Typography color="red">{formik.errors.password}</Typography>
+            )}
             <Button
+              type="submit"
               disabled={disableButton}
-              onClick={loginSubmit}
               className="mt-2 bg-gradient-to-r from-cyan-500 via-purple-300 to-pink-300 text-[100%] font-semibold"
               fullWidth
             >
