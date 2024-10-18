@@ -21,6 +21,7 @@ export default function SignInPage() {
   const [signIn] = useSignInMutation()
   const [disableButton, setDisableButton] = useState(false)
   const [open, setOpen] = useState(false)
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const validationSchema = yup.object({
     email: yup.string().email('Invalid email format').required('Required'),
@@ -34,7 +35,7 @@ export default function SignInPage() {
     },
     validationSchema,
     onSubmit: async (values) => {
-      setOpen(false);
+      setHasAttemptedSubmit(true);
       try {
         setDisableButton(true);
         await signIn({
@@ -53,7 +54,7 @@ export default function SignInPage() {
 
 
   return (
-    <div className="font-prompt grid h-screen grid-rows-[auto_1fr] bg-white ">
+    <div className="font-prompt grid h-screen grid-rows-[auto_1fr] bg-white " onSubmit={formik.handleSubmit}>
       <div>
         <Header />
         <div className="hidden sm:block my-10 mx-10">
@@ -81,38 +82,34 @@ export default function SignInPage() {
               {t("login.error")}
             </Alert>
             <Typography className="text-[110%] font-bold">
-              {t("email")}
+              {t("email")} {hasAttemptedSubmit && formik.errors.email && <span style={{ color: 'red' }}>*</span>}
             </Typography>
             <Input
               error={formik.touched.email && Boolean(formik.errors.email)}
               type="email"
               size="lg"
               color="black"
-              placeholder="email@mail.com"
+              // label="email@mail.com"
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.email}
               name="email"
-              label="Email"
+              // label="Email"
             />
-            {formik.touched.email && formik.errors.email && (
-              <Typography color="red">{formik.errors.email}</Typography>
-            )}
+
             <Typography className="text-[110%] font-bold">
-              {t("password")}
+              {t("password")} {hasAttemptedSubmit && formik.errors.password && <span style={{ color: 'red' }}>*</span>}
             </Typography>
             <Input
               error={formik.touched.password && Boolean(formik.errors.password)}
-              label="Password"
+              // label="Password"
               type="password"
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.password}
               name="password"
             />           
-              {formik.touched.password && formik.errors.password && (
-              <Typography color="red">{formik.errors.password}</Typography>
-            )}
+
             <Button
               type="submit"
               disabled={disableButton}
