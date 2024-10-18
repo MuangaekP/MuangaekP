@@ -1,7 +1,11 @@
 {
   "login": {
     "error": "Email or password invalid",
-    "signIn": "SignIn"
+    "signIn": "SignIn",
+    "please enter your email": "Please enter email",
+    "please enter correct email address": "Please enter correct email address",
+    "please enter your password": "please enter your password",
+    "Email or password is incorrect": "Email or password is incorrect"
   },
   "register" : {
     "register" : "Register",

@@ -1,7 +1,13 @@
 {
   "login": {
     "error": "อีเมลหรือรหัสไม่ถูกต้อง",
-    "signIn": "เข้าสู่ระบบ"
+    "signIn": "เข้าสู่ระบบ",
+    "please enter your email": "โปรดกรอกอีเมลของคุณ",
+    "please enter correct email address": "โปรดกรอกอีเมลให้ถูกต้อง",
+    "please enter your password": "โปรดกรอกรหัสผ่านของคุณ",
+    "Email or password is incorrect": "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+    
+    
   },
   "register" : {
     "register" : "ลงทะเบียน",

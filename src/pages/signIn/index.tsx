@@ -12,52 +12,65 @@ import {
   Input,
   Button,
 } from "@material-tailwind/react"
+import { useFormik } from 'formik'
+import * as yup from "yup"
 
 export default function SignInPage() {
   const router = useRouter()
   const { t } = useTranslation()
   const [signIn] = useSignInMutation()
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [showErrorUsername, setShowErrorUsername] = useState(false)
-  const [showErrorPassword, setShowErrorPassword] = useState(false)
   const [disableButton, setDisableButton] = useState(false)
   const [open, setOpen] = useState(false)
+  const [serverError, setServerError] = useState('')
 
-  const loginSubmit = async () => {
-    if (username.length > 0 && password.length > 0) {
-      setOpen(false)
+  const validationSchema = yup.object({
+    email: yup
+      .string()
+      .email(t('login.please enter correct email address'))
+      .required(t('login.please enter your email')),
+    password: yup
+      .string()
+      .min(1, '')
+      .required(t('login.please enter your password')),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema,
+    onSubmit: async (values) => {
       try {
-        await signIn(
-          {
-            email: username,
-            password: password
-          }
-        ).unwrap()
-        setDisableButton(true)
-        router.push("/manageAccommodation")
-      } catch (error: any) {
-        setOpen(true)
-        setDisableButton(false)
+        setDisableButton(true);
+        setServerError('');
+        await signIn({
+          email: values.email,
+          password: values.password,
+        }).unwrap();
+        router.push('/manageAccommodation');
+      } catch (error) {
+        // setOpen(true);
+        setServerError(t('login.Email or password is incorrect'));
+        setDisableButton(false);
       }
-    } else {
-      setShowErrorUsername(true)
-      setShowErrorPassword(true)
-    }
-  };
+    },
+    validateOnBlur: true,
+    validateOnChange: true,
+  });
 
   return (
-    <div className="font-prompt grid h-screen grid-rows-[auto_1fr] bg-white ">
+    <div className="font-prompt grid h-screen grid-rows-[auto_1fr] bg-white">
       <div>
         <Header />
         <div className="hidden sm:block my-10 mx-10">
-          <Breadcrumbs className="">
-          <a href="/" className="opacity-80 ml-2">
-            {t('home')}
-          </a>
-          <a href="/signIn" className="text-black">
-            {t('login.signIn')}
-          </a>
+          <Breadcrumbs>
+            <a href="/" className="opacity-80 ml-2">
+              {t('home')}
+            </a>
+            <a href="/signIn" className="text-black">
+              {t('login.signIn')}
+            </a>
           </Breadcrumbs>
         </div>
       </div>
@@ -66,58 +79,73 @@ export default function SignInPage() {
         color="transparent"
         shadow={false}
       >
-        <Typography className="text-[150%] text-black ">
+        <Typography className="text-[150%] text-black">
           {t("login.signIn")}
         </Typography>
-        <form className="mt-8 mb-2 w-80 max-w-screen-lg sm:w-96 ">
-          <div className="mb-1 flex flex-col gap-6 ">
+        <form className="mt-8 mb-2 w-80 max-w-screen-lg sm:w-96" onSubmit={formik.handleSubmit} noValidate>
+          <div className="mb-1 flex flex-col gap-6">
+          {serverError && (
+              <div style={{ color: 'red', fontSize: '0.700rem', textAlign: 'center' }}>
+                {serverError}
+              </div>
+            )}
             <Alert open={open} color="red" onClose={() => setOpen(false)}>
               {t("login.error")}
             </Alert>
-            <Typography className="text-[110%] font-bold">
-              {t("email")}
-            </Typography>
+
+          <div className="flex justify-between items-center">
+           <Typography className="text-[110%] font-bold">
+            {t("email")}
+           </Typography>
+            {formik.touched.email && formik.errors.email && (
+            <div style={{ color: 'red', fontSize: '0.700rem' }}>
+                {formik.errors.email}
+            </div>
+            )}
+          </div>
             <Input
-              error={showErrorUsername}
+              error={formik.touched.email && Boolean(formik.errors.email)}
               type="email"
               size="lg"
               color="black"
-              placeholder="email@mail.com"
-              onChange={(e) => {
-                setUsername(e.target.value);
-              }}
-              label="Email"
-              onFocus={(e) => { setShowErrorUsername(false) }}
-              value={username}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.email}
+              name="email"
             />
+            {/* {formik.touched.email && formik.errors.email && (
+              <div style={{ color: 'red', fontSize: '0.600rem' }}>
+                {formik.errors.email}
+              </div>
+            )} */}
+
+            <div className="flex justify-between items-center">
             <Typography className="text-[110%] font-bold">
               {t("password")}
             </Typography>
+            {formik.touched.password && formik.errors.password && (
+              <div style={{ color: 'red', fontSize: '0.700rem' }}>
+                {formik.errors.password}
+              </div>
+            )}
+            </div>
             <Input
-              label="Password"
+              error={formik.touched.password && Boolean(formik.errors.password)}
               type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.password}
+              name="password"
             />
-            {/* { <Input
-              type="password"
-              size="lg"
-              label="Password"
-              color="white"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              onFocus={(e) => { setShowErrorPassword(false) }}
-              // icon={<i className="fas fa-heart" />}
-              // className=" !border-t-blue-gray-500 focus:!border-t-gray-900 bg-white"
-            /> */}
-            
+            {/* {formik.touched.password && formik.errors.password && (
+              <div style={{ color: 'red', fontSize: '0.600rem' }}>
+                {formik.errors.password}
+              </div>
+            )} */}
+
             <Button
+              type="submit"
               disabled={disableButton}
-              onClick={loginSubmit}
               className="mt-2 bg-gradient-to-r from-cyan-500 via-purple-300 to-pink-300 text-[100%] font-semibold"
               fullWidth
             >
